@@ -1,0 +1,1151 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>موسوعة مدارس يطا</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1565C0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="مدارس يطا">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f5f5;
+            min-height: 100vh;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #1565C0 0%, #0D47A1 100%);
+            color: white;
+            padding: 15px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+        }
+        
+        .header-copyright {
+            text-align: right;
+            font-size: 12px;
+            opacity: 0.9;
+        }
+        
+        .header-copyright p {
+            margin: 2px 0;
+        }
+        
+        .header .logo {
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+        
+        .header .title-container {
+            text-align: right;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 2px;
+        }
+        
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .container {
+            padding: 15px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .search-box {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .search-box input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        
+        .search-box input:focus {
+            border-color: #1565C0;
+        }
+        
+        .filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .filter-group {
+            background: white;
+            border-radius: 12px;
+            padding: 12px;
+            flex: 1;
+            min-width: 140px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .filter-group label {
+            display: block;
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        
+        .filter-group select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            background: white;
+        }
+        
+        .grade-filter {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .grade-filter h3 {
+            font-size: 14px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .grade-range {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .grade-range input[type="range"] {
+            width: 100%;
+            margin: 10px 0;
+        }
+        
+        .grade-values {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .schools-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .school-card {
+            background: white;
+            border-radius: 12px;
+            padding: 18px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: all 0.3s;
+            border-right: 4px solid #1565C0;
+        }
+        
+        .school-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .school-card h3 {
+            font-size: 20px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .school-card .info {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            font-size: 16px;
+            color: #666;
+        }
+        
+        .school-card .tag {
+            background: #E8F5E9;
+            color: #1565C0;
+            padding: 5px 12px;
+            border-radius: 12px;
+            font-size: 14px;
+        }
+        
+        .school-card .students {
+            margin-top: 10px;
+            font-size: 15px;
+            color: #000;
+        }
+        
+        .school-card .cluster-info {
+            margin-top: 8px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #1565C0;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+        
+        .modal.active {
+            display: block;
+        }
+        
+        .modal-content {
+            background: white;
+            margin: 10px;
+            border-radius: 16px;
+            padding: 12px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            position: relative;
+        }
+        
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+            width: 30px;
+            height: 30px;
+            text-align: center;
+            line-height: 30px;
+            background: #f0f0f0;
+            border-radius: 50%;
+        }
+        
+        .detail-header {
+            text-align: center;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #E8F5E9;
+            margin-bottom: 10px;
+        }
+        
+        .detail-header h2 {
+            color: #1565C0;
+            font-size: 20px;
+            margin-bottom: 5px;
+        }
+        
+        .detail-header .village {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .detail-info {
+            margin-bottom: 15px;
+        }
+        
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .detail-row .label {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .detail-row .value {
+            color: #333;
+            font-size: 14px;
+            font-weight: 500;
+            text-align: left;
+            flex: 1;
+        }
+        
+        .action-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+        }
+        
+        .action-btn {
+            flex: 1;
+            min-width: 100px;
+            padding: 12px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        
+        .btn-call {
+            background: #1565C0;
+            color: white;
+        }
+        
+        .btn-sms {
+            background: #1976D2;
+            color: white;
+        }
+        
+        .btn-whatsapp {
+            background: #25D366;
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: #FF9800;
+            color: white;
+        }
+        
+        .detail-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .detail-action-btn {
+            background: #E8F5E9;
+            color: #1565C0;
+            padding: 12px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            font-size: 14px;
+        }
+        
+        /* Formations Table */
+        .formations-section {
+            margin-top: 10px;
+        }
+        
+        .formations-section h3 {
+            color: #1565C0;
+            font-size: 13px;
+            margin-bottom: 6px;
+            padding-bottom: 3px;
+            border-bottom: 1px solid #E8F5E9;
+        }
+        
+        .formations-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
+        }
+        
+        .formation-item {
+            background: #f5f5f5;
+            padding: 6px 8px;
+            border-radius: 6px;
+            text-align: center;
+        }
+        
+        .formation-item .label {
+            font-size: 14px;
+            color: #000;
+            margin-bottom: 2px;
+        }
+        
+        .formation-item .value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #000;
+        }
+        
+        .formation-item.highlight {
+            background: #E8F5E9;
+            grid-column: span 4;
+        }
+        
+        .formation-item.highlight .value {
+            color: #1565C0;
+            font-size: 22px;
+        }
+        
+        /* Map */
+        #map {
+            height: 350px;
+            width: 100%;
+            border-radius: 12px;
+            margin-top: 10px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .coordinates {
+            background: #f9f9f9;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 10px;
+            text-align: center;
+            font-family: monospace;
+        }
+        
+        /* Stats */
+        .stats {
+            background: linear-gradient(135deg, #1565C0 0%, #0D47A1 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-around;
+            text-align: center;
+        }
+        
+        .stats .stat {
+            flex: 1;
+        }
+        
+        .stats .number {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        .stats .label {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+        
+        /* Tabs */
+        .tabs {
+            display: flex;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+            font-weight: bold;
+            color: #666;
+        }
+        
+        .tab.active {
+            background: #1565C0;
+            color: white;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* No results */
+        .no-results {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        
+        .no-results h3 {
+            margin-bottom: 10px;
+        }
+        
+        /* Back button */
+        .back-btn {
+            display: inline-block;
+            padding: 8px 16px;
+            background: #f0f0f0;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <img src="logo.png" alt="شعار المديرية" class="logo">
+        <div class="title-container">
+            <h1>موسوعة مدارس يطا</h1>
+            <p>العام الدراسي 2025-2026</p>
+        </div>
+        <div class="header-copyright">
+            <p>أ.هاني الحمامدة</p>
+            <p>قسم التخطيط</p>
+        </div>
+    </div>
+    
+    <div class="container" id="homePage">
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="🔍 بحث عن مدرسة...">
+        </div>
+        
+        <div class="filters">
+            <div class="filter-group">
+                <label>القرية</label>
+                <select id="villageFilter">
+                    <option value="">الكل</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>الجنس</label>
+                <select id="genderFilter">
+                    <option value="">الكل</option>
+                    <option value="ذكور">ذكور</option>
+                    <option value="اناث">اناث</option>
+                    <option value="مختلطة">مختلطة</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>المستوى</label>
+                <select id="levelFilter">
+                    <option value="">الكل</option>
+                    <option value="أساسي">أساسي</option>
+                    <option value="ثانوي">ثانوي</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>الجهة المالكة</label>
+                <select id="ownerFilter">
+                    <option value="">الكل</option>
+                    <option value="حكومي">حكومي</option>
+                    <option value="خاصة">خاصة</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>العنقود</label>
+                <select id="clusterFilter">
+                    <option value="">الكل</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>منسق العنقود</label>
+                <select id="coordinatorFilter">
+                    <option value="">الكل</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="stats" id="stats">
+            <div class="stat">
+                <div class="number" id="totalSchools">0</div>
+                <div class="label">المدارس</div>
+            </div>
+            <div class="stat">
+                <div class="number" id="totalStudents">0</div>
+                <div class="label">الطلاب</div>
+            </div>
+            <div class="stat">
+                <div class="number" id="totalStaff">0</div>
+                <div class="label">مجموع العاملين</div>
+            </div>
+        </div>
+        
+        <div class="schools-list" id="schoolsList">
+            <div class="loading">
+                <div class="loading-spinner"></div>
+                <p>جاري تحميل البيانات...</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Details Modal -->
+    <div class="modal" id="detailsModal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('detailsModal')">&times;</span>
+            
+            <div class="detail-header">
+                <h2 id="detailName">اسم المدرسة</h2>
+                <div class="village" id="detailVillage">القرية</div>
+            </div>
+            
+            <div class="tabs">
+                <div class="tab active" onclick="switchTab('info')">ℹ️ المعلومات</div>
+                <div class="tab" onclick="switchTab('formations')">📊 التشكيلات</div>
+                <div class="tab" onclick="switchTab('map')">🗺️ الخريطة</div>
+            </div>
+            
+            <div class="tab-content active" id="tab-info">
+                <div class="detail-info" id="detailInfo"></div>
+                
+                <div class="action-buttons">
+                    <a href="#" class="action-btn btn-call" id="btnCall">📞 اتصال</a>
+                    <a href="#" class="action-btn btn-sms" id="btnSMS">💬 رسالة</a>
+                    <a href="#" class="action-btn btn-whatsapp" id="btnWhatsApp">📱 واتساب</a>
+                </div>
+            </div>
+            
+            <div class="tab-content" id="tab-formations">
+                <div class="formations-section" id="formationsContent"></div>
+            </div>
+            
+            <div class="tab-content" id="tab-map">
+                <div id="map"></div>
+                <div class="coordinates" id="coordinates"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSV83qP_8dMi5vLgbWuLRJHEYXFGDstmGHADq4tNcUe8YZFqnUulSVJmmuIo0vUuiRiWOFTDxphrmGq/pub?output=csv';
+        
+        // Use Jina AI as CORS proxy
+        const PROXY_URL = 'https://r.jina.ai/http://';
+        
+        const GRADE_ORDER = {
+            'الأول الأساسي': 1, 'الثاني الأساسي': 2, 'الثالث الاساسي': 3, 'الرابع الاساسي': 4,
+            'الخامس الاساسي': 5, 'السادس الاساسي': 6, 'السابع الاساسي': 7, 'الثامن الاساسي': 8,
+            'التاسع الاساسي': 9, 'العاشرالاساسي': 10, 'الحادي عشر ادبي': 11, 'الثاني عشر ادبي': 12,
+            'الثاني عشر صناعي': 13, 'العاشر المهني': 12
+        };
+        
+        let schoolsData = [];
+        let map = null;
+        let marker = null;
+        
+        function toArabic(num) {
+            if (num === undefined || num === null) return num;
+            return toEnglish(num);
+        }
+        
+        function toEnglish(num) {
+            const hindi = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
+            const english = ['0','1','2','3','4','5','6','7','8','9'];
+            if (typeof num === 'string') {
+                let result = num;
+                for (let i = 0; i < hindi.length; i++) {
+                    result = result.replace(new RegExp(hindi[i], 'g'), english[i]);
+                }
+                return result;
+            }
+            return num;
+        }
+        
+        function parseGrade(grade) {
+            return GRADE_ORDER[grade] || parseInt(toEnglish(grade)) || 0;
+        }
+        
+        async function loadData() {
+            try {
+                // Use Jina AI as CORS proxy to fetch CSV
+                const response = await fetch(PROXY_URL + encodeURIComponent(CSV_URL));
+                if (!response.ok) throw new Error('Network response was not ok');
+                let text = await response.text();
+                
+                // Handle Jina AI response format - extract CSV from the response
+                if (text.includes('Markdown Content:')) {
+                    text = text.split('Markdown Content:')[1];
+                }
+                
+                // Handle CSV parsing more carefully
+                let lines = text.split('\n').filter(l => l.trim());
+                if (lines.length === 0) throw new Error('No data found');
+                
+                // Get headers - handle quoted fields
+                const headerLine = lines[0];
+                const headers = headerLine.split(',').map(h => h.trim().replace(/"/g, ''));
+                
+                schoolsData = [];
+                
+                for (let i = 1; i < lines.length; i++) {
+                    if (!lines[i].trim()) continue;
+                    
+                    // Split by comma, but handle quoted values
+                    const values = [];
+                    let current = '';
+                    let inQuotes = false;
+                    
+                    for (let char of lines[i]) {
+                        if (char === '"') {
+                            inQuotes = !inQuotes;
+                        } else if (char === ',' && !inQuotes) {
+                            values.push(current.trim());
+                            current = '';
+                        } else {
+                            current += char;
+                        }
+                    }
+                    values.push(current.trim());
+                    
+                    if (values.length >= headers.length) {
+                        const obj = {};
+                        headers.forEach((h, idx) => { 
+                            obj[h] = values[idx] ? values[idx].replace(/"/g, '') : ''; 
+                        });
+                        obj.minGrade = parseGrade(obj['ادنى صف']);
+                        obj.maxGrade = parseGrade(obj['اعلى صف']);
+                        obj.students = parseInt(toEnglish(obj['مجموع الطلاب'])) || 0;
+                        obj.teachers = parseFloat(toEnglish(obj['مجموع المعلمين'])) || 0;
+                        schoolsData.push(obj);
+                    }
+                }
+                
+                if (schoolsData.length === 0) {
+                    throw new Error('No schools data parsed');
+                }
+                
+                initFilters();
+                renderSchools();
+                updateStats();
+            } catch (error) {
+                console.error('Error loading data:', error);
+                document.getElementById('schoolsList').innerHTML = `
+                    <div class="no-results">
+                        <h3>❌ خطأ في تحميل البيانات</h3>
+                        <p>${error.message}</p>
+                        <p style="margin-top:10px; font-size:12px;">يرجى التحقق من الاتصال بالإنترنت</p>
+                    </div>
+                `;
+            }
+        }
+        
+        function initFilters() {
+            const villages = [...new Set(schoolsData.map(s => s['القرية']))].filter(Boolean).sort();
+            const villageSelect = document.getElementById('villageFilter');
+            villages.forEach(v => {
+                const option = document.createElement('option');
+                option.value = v;
+                option.textContent = v;
+                villageSelect.appendChild(option);
+            });
+            
+            const clusters = [...new Set(schoolsData.map(s => (s['اسم العنقود'] || '').trim()))].filter(Boolean).sort();
+            const clusterSelect = document.getElementById('clusterFilter');
+            clusters.forEach(c => {
+                const option = document.createElement('option');
+                option.value = c;
+                option.textContent = c;
+                clusterSelect.appendChild(option);
+            });
+            
+            const coordinators = [...new Set(schoolsData.map(s => (s['منسق العنقود'] || '').trim()))].filter(Boolean).sort();
+            const coordinatorSelect = document.getElementById('coordinatorFilter');
+            coordinators.forEach(c => {
+                const option = document.createElement('option');
+                option.value = c;
+                option.textContent = c;
+                coordinatorSelect.appendChild(option);
+            });
+            
+            document.getElementById('searchInput').addEventListener('input', renderSchools);
+            document.getElementById('villageFilter').addEventListener('change', renderSchools);
+            document.getElementById('genderFilter').addEventListener('change', renderSchools);
+            document.getElementById('levelFilter').addEventListener('change', renderSchools);
+            document.getElementById('ownerFilter').addEventListener('change', renderSchools);
+            document.getElementById('clusterFilter').addEventListener('change', renderSchools);
+            document.getElementById('coordinatorFilter').addEventListener('change', renderSchools);
+        }
+        
+        function getFilteredSchools() {
+            const search = document.getElementById('searchInput').value;
+            const village = document.getElementById('villageFilter').value;
+            const gender = document.getElementById('genderFilter').value;
+            const level = document.getElementById('levelFilter').value;
+            const owner = document.getElementById('ownerFilter').value;
+            const cluster = document.getElementById('clusterFilter').value;
+            const coordinator = document.getElementById('coordinatorFilter').value;
+            
+            return schoolsData.filter(s => {
+                if (search && !s['اسم المدرسة'].includes(search)) return false;
+                if (village && s['القرية'] !== village) return false;
+                if (gender && s['جنس المدرسة'] !== gender) return false;
+                if (level && s['مستوى المدرسة'] !== level) return false;
+                if (owner && s['الجهة المالكة'] !== owner) return false;
+                if (cluster && (s['اسم العنقود'] || '').trim() !== cluster) return false;
+                if (coordinator && (s['منسق العنقود'] || '').trim() !== coordinator) return false;
+                return true;
+            });
+        }
+        
+        function renderSchools() {
+            const filtered = getFilteredSchools();
+            const list = document.getElementById('schoolsList');
+            
+            if (filtered.length === 0) {
+                list.innerHTML = `
+                    <div class="no-results">
+                        <h3>🔍 لا توجد نتائج</h3>
+                        <p>جرب تغيير الفلاتر</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            list.innerHTML = filtered.map(school => `
+                <div class="school-card" onclick="showDetails('${school['الرقم الوطني']}')">
+                    <h3>${school['اسم المدرسة']}</h3>
+                    <div class="info">
+                        <span class="tag">${school['القرية']}</span>
+                        <span class="tag">${school['جنس المدرسة']}</span>
+                        <span class="tag">${school['مستوى المدرسة']}</span>
+                    </div>
+                    <div class="students">
+                        الصفوف: ${school['ادنى صف']} - ${school['اعلى صف']} | 
+                        الطلبة: ${toEnglish(school['مجموع الطلاب']) || 0} | 
+                        العاملين: ${toEnglish(school['مجموع العاملين']) || 0} | 
+                        سنة التأسيس: ${school['سنة افتتاح المدرسة'] || '-'}
+                    </div>
+                    <div class="cluster-info">
+                        <span style="color: #d32f2f;">العنقود: ${(school['اسم العنقود'] || '').trim() || '-'} | منسق العنقود: ${(school['منسق العنقود'] || '').trim() || '-'}</span>
+                    </div>
+                </div>
+            `).join('');
+            
+            updateStats();
+        }
+        
+        function updateStats() {
+            const filtered = getFilteredSchools();
+            const totalStudents = filtered.reduce((sum, s) => sum + s.students, 0);
+            const totalStaff = filtered.reduce((sum, s) => sum + (parseFloat(toEnglish(s['مجموع العاملين'])) || 0), 0);
+            
+            document.getElementById('totalSchools').textContent = filtered.length.toLocaleString('en');
+            document.getElementById('totalStudents').textContent = totalStudents.toLocaleString('en');
+            document.getElementById('totalStaff').textContent = totalStaff.toLocaleString('en');
+        }
+        
+        function showDetails(id) {
+            const school = schoolsData.find(s => s['الرقم الوطني'] === id);
+            if (!school) return;
+            
+            document.getElementById('detailName').textContent = school['اسم المدرسة'];
+            document.getElementById('detailVillage').textContent = school['القرية'];
+            
+            const phone = school['خلوي المدرسة(وطنية)'] || '';
+            const whatsapp = school['واتساب'] || phone;
+            const phoneNum = phone.replace(/-/g, '');
+            const whatsappNum = whatsapp.replace(/-/g, '');
+            
+            document.getElementById('btnCall').href = `tel:${phoneNum}`;
+            document.getElementById('btnSMS').href = `sms:${phoneNum}`;
+            document.getElementById('btnWhatsApp').href = `https://wa.me/${whatsappNum}`;
+            
+            document.getElementById('detailInfo').innerHTML = `
+                <div class="detail-row">
+                    <span class="label">الجنس</span>
+                    <span class="value">${school['جنس المدرسة']}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="label">المستوى</span>
+                    <span class="value">${school['مستوى المدرسة']}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="label">العنوان</span>
+                    <span class="value">${school['عنوان المدرسة'] || '-'}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="label">الجهة المالكة</span>
+                    <span class="value">${school['الجهة المالكة']}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="label">الخلوي</span>
+                    <span class="value">${phone}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="label">مدير المدرسة</span>
+                    <span class="value">${school['اسم مدير المدرسة'] || '-'}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="label">سنة الافتتاح</span>
+                    <span class="value">${school['سنة افتتاح المدرسة'] || '-'}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="label">ملكية المبنى</span>
+                    <span class="value">${school['ملكية'] || '-'}</span>
+                </div>
+            `;
+            
+            document.getElementById('formationsContent').innerHTML = `
+                <div class="formations-section">
+                    <h3>📚 الشعب الدراسية</h3>
+                    <div class="formations-grid">
+                        <div class="formation-item">
+                            <div class="label">ذكور</div>
+                            <div class="value">${toArabic(school['عدد الشعب/ذكور'] || 0)}</div>
+                        </div>
+                        <div class="formation-item">
+                            <div class="label">إناث</div>
+                            <div class="value">${toArabic(school['عدد الشعب/اناث'] || 0)}</div>
+                        </div>
+                        <div class="formation-item">
+                            <div class="label">مختلطة</div>
+                            <div class="value">${toArabic(school['عدد الشعب/مختلطة'] || 0)}</div>
+                        </div>
+                        <div class="formation-item highlight">
+                            <div class="label">المجموع</div>
+                            <div class="value">${toArabic(school['مجموع الشعب'] || 0)}</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="formations-section">
+                    <h3>👨‍🎓 الطلبة</h3>
+                    <div class="formations-grid">
+                        <div class="formation-item">
+                            <div class="label">ذكور</div>
+                            <div class="value">${toArabic(school['عدد الطلبة/ذكور'] || 0)}</div>
+                        </div>
+                        <div class="formation-item">
+                            <div class="label">إناث</div>
+                            <div class="value">${toArabic(school['عدد الطلبة/اناث'] || 0)}</div>
+                        </div>
+                        <div class="formation-item">
+                            <div class="label">المجموع</div>
+                            <div class="value">${toArabic(school['مجموع الطلاب'] || 0)}</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="formations-section">
+                    <h3>👨‍🏫 المعلمين</h3>
+                    <div class="formations-grid">
+                        <div class="formation-item">
+                            <div class="label">ذكور</div>
+                            <div class="value">${toArabic(school['عدد المعلمين/ذكور'] || 0)}</div>
+                        </div>
+                        <div class="formation-item">
+                            <div class="label">إناث</div>
+                            <div class="value">${toArabic(school['عدد المعلمين/اناث'] || 0)}</div>
+                        </div>
+                        <div class="formation-item">
+                            <div class="label">المجموع</div>
+                            <div class="value">${toArabic(school['مجموع المعلمين'] || 0)}</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="formations-section">
+                    <h3>👔 الإداريين</h3>
+                    <div class="formations-grid">
+                        <div class="formation-item">
+                            <div class="label">ذكور</div>
+                            <div class="value">${toArabic(school['عدد الاداريين/ذكور'] || 0)}</div>
+                        </div>
+                        <div class="formation-item">
+                            <div class="label">إناث</div>
+                            <div class="value">${toArabic(school['عدد الاداريين/اناث'] || 0)}</div>
+                        </div>
+                        <div class="formation-item">
+                            <div class="label">المجموع</div>
+                            <div class="value">${toArabic(school['مجموع الاداريين'] || 0)}</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="formations-section">
+                    <h3>🔧 الفنيين</h3>
+                    <div class="formations-grid">
+                        <div class="formation-item">
+                            <div class="label">ذكور</div>
+                            <div class="value">${toArabic(school['عدد المراكز الفنية/ذكور'] || 0)}</div>
+                        </div>
+                        <div class="formation-item">
+                            <div class="label">إناث</div>
+                            <div class="value">${toArabic(school['عدد الفنيين/اناث'] || 0)}</div>
+                        </div>
+                        <div class="formation-item">
+                            <div class="label">المجموع</div>
+                            <div class="value">${toArabic(school['مجموع الفنيين'] || 0)}</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="formations-section">
+                    <h3>🎯 المرشدين والمصادر</h3>
+                    <div class="formations-grid">
+                        <div class="formation-item">
+                            <div class="label">مرشدين ذكور</div>
+                            <div class="value">${toArabic(school['مرشدين ذكور'] || 0)}</div>
+                        </div>
+                        <div class="formation-item">
+                            <div class="label">مرشدين إناث</div>
+                            <div class="value">${toArabic(school['مرشدين اناث'] || 0)}</div>
+                        </div>
+                        <div class="formation-item">
+                            <div class="label">مصادر ذكور</div>
+                            <div class="value">${toArabic(school['مصادر ذكور'] || 0)}</div>
+                        </div>
+                        <div class="formation-item">
+                            <div class="label">مصادر إناث</div>
+                            <div class="value">${toArabic(school['مصادر اناث'] || 0)}</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="formations-section">
+                    <h3>📊 الإجمالي</h3>
+                    <div class="formations-grid">
+                        <div class="formation-item">
+                            <div class="label">المستخدمين ذكور</div>
+                            <div class="value">${toArabic(school['عدد المستخدمين/ذكور'] || 0)}</div>
+                        </div>
+                        <div class="formation-item">
+                            <div class="label">المستخدمين إناث</div>
+                            <div class="value">${toArabic(school['عدد المستخدمين/اناث'] || 0)}</div>
+                        </div>
+                        <div class="formation-item">
+                            <div class="label">إجمالي ذكور</div>
+                            <div class="value">${toArabic(school['المجموع الكلي ذكور'] || 0)}</div>
+                        </div>
+                        <div class="formation-item">
+                            <div class="label">إجمالي إناث</div>
+                            <div class="value">${toArabic(school['المجموع الكلي اناث'] || 0)}</div>
+                        </div>
+                        <div class="formation-item highlight">
+                            <div class="label">إجمالي العاملين</div>
+                            <div class="value">${toArabic(school['مجموع العاملين'] || 0)}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            const lat = parseFloat(school['Latitude']);
+            const lng = parseFloat(school['Longitude']);
+            
+            document.getElementById('coordinates').innerHTML = lat && lng 
+                ? `خطوط الطول: ${toArabic(lng.toFixed(6))} | خطوط العرض: ${toArabic(lat.toFixed(6))}`
+                : 'لا توجد إحداثيات لهذه المدرسة';
+            
+            document.getElementById('detailsModal').classList.add('active');
+            switchTab('info');
+            
+            if (lat && lng) {
+                setTimeout(() => {
+                    initMap(lat, lng, school['اسم المدرسة']);
+                }, 100);
+            }
+        }
+        
+        function initMap(lat, lng, title) {
+            if (map) {
+                map.remove();
+            }
+            
+            document.getElementById('map').innerHTML = '';
+            
+            map = L.map('map').setView([lat, lng], 17);
+            
+            // Satellite imagery
+            L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                attribution: '© Esri'
+            }).addTo(map);
+            
+            // Add marker
+            marker = L.marker([lat, lng], {opacity: 0.9}).addTo(map)
+                .bindPopup('<b>' + title + '</b>')
+                .openPopup();
+            
+            // Center map
+            map.panTo([lat, lng]);
+        }
+        
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            const tabs = document.querySelectorAll('.tab');
+            if (tabName === 'info') tabs[0].classList.add('active');
+            else if (tabName === 'formations') tabs[1].classList.add('active');
+            else if (tabName === 'map') tabs[2].classList.add('active');
+            
+            document.getElementById('tab-' + tabName).classList.add('active');
+            
+            // Re-center map when switching to map tab
+            if (tabName === 'map' && map) {
+                setTimeout(() => {
+                    map.invalidateSize();
+                    map.panTo(map.getCenter());
+                }, 100);
+            }
+        }
+        
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+        
+        document.getElementById('detailsModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.remove('active');
+            }
+        });
+        
+        loadData();
+        
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('service-worker.js')
+                .then(reg => console.log('Service Worker registered'))
+                .catch(err => console.log('Service Worker registration failed:', err));
+        }
+    </script>
+</body>
+</html>

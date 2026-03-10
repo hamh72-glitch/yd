@@ -1,0 +1,26 @@
+{
+  "name": "موسوعة مدارس يطا",
+  "short_name": "مدارس يطا",
+  "description": "دليل مدارس يطا - العام الدراسي 2025-2026",
+  "start_url": "/yd/",
+  "scope": "/yd/",
+  "display": "standalone",
+  "background_color": "#f5f5f5",
+  "theme_color": "#1565C0",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "categories": ["education", "reference"],
+  "lang": "ar",
+  "dir": "rtl"
+}
