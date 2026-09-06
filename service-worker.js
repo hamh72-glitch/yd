@@ -1,4 +1,4 @@
-const CACHE_NAME = 'yatta-schools-v4';
+const CACHE_NAME = 'yatta-schools-v5';
 const urlsToCache = [
   '/yd/',
   '/yd/index.html',
@@ -33,6 +33,21 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
+  // Network-first for page navigation so users always get the latest version
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request)
+        .then(response => {
+          var copy = response.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
+          return response;
+        })
+        .catch(() => caches.match(event.request).then(cached => cached || caches.match('/yd/index.html')))
+    );
+    return;
+  }
+
+  // Cache-first with network fallback for static assets
   event.respondWith(
     caches.match(event.request)
       .then(response => {
