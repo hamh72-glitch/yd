@@ -600,6 +600,12 @@
                     <option value="">الكل</option>
                 </select>
             </div>
+            <div class="filter-group">
+                <label>الرقم الارضي</label>
+                <select id="landlineFilter">
+                    <option value="">الكل</option>
+                </select>
+            </div>
         </div>
         
         <div class="stats" id="stats">
@@ -803,6 +809,15 @@
                 coordinatorSelect.appendChild(option);
             });
             
+            const landlines = [...new Set(schoolsData.map(s => (s['الرقم الارضي'] || '').trim()))].filter(Boolean).sort();
+            const landlineSelect = document.getElementById('landlineFilter');
+            landlines.forEach(l => {
+                const option = document.createElement('option');
+                option.value = l;
+                option.textContent = l;
+                landlineSelect.appendChild(option);
+            });
+            
             document.getElementById('searchInput').addEventListener('input', renderSchools);
             document.getElementById('villageFilter').addEventListener('change', renderSchools);
             document.getElementById('genderFilter').addEventListener('change', renderSchools);
@@ -810,6 +825,7 @@
             document.getElementById('ownerFilter').addEventListener('change', renderSchools);
             document.getElementById('clusterFilter').addEventListener('change', renderSchools);
             document.getElementById('coordinatorFilter').addEventListener('change', renderSchools);
+            document.getElementById('landlineFilter').addEventListener('change', renderSchools);
         }
         
         function getFilteredSchools() {
@@ -820,6 +836,7 @@
             const owner = document.getElementById('ownerFilter').value;
             const cluster = document.getElementById('clusterFilter').value;
             const coordinator = document.getElementById('coordinatorFilter').value;
+            const landline = document.getElementById('landlineFilter').value;
             
             return schoolsData.filter(s => {
                 if (search && !s['اسم المدرسة'].includes(search)) return false;
@@ -829,6 +846,7 @@
                 if (owner && s['الجهة المالكة'] !== owner) return false;
                 if (cluster && (s['اسم العنقود'] || '').trim() !== cluster) return false;
                 if (coordinator && (s['منسق العنقود'] || '').trim() !== coordinator) return false;
+                if (landline && (s['الرقم الارضي'] || '').trim() !== landline) return false;
                 return true;
             });
         }
@@ -920,6 +938,10 @@
                 <div class="detail-row">
                     <span class="label">الخلوي</span>
                     <span class="value">${phone}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="label">الرقم الارضي</span>
+                    <span class="value">${school['الرقم الارضي'] || '-'}</span>
                 </div>
                 <div class="detail-row">
                     <span class="label">مدير المدرسة</span>
